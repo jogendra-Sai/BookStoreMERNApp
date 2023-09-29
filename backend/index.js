@@ -1,40 +1,23 @@
 import express from "express";
 import { PORT, mongoDBURL } from "./config.js";
-import { validateBooks } from "./validations.js";
-import { Book } from "./models/bookModel.js";
+import booksRouter from "./routes/booksRoute.js";
 import mongoose from "mongoose";
+import cors from "cors"
 
 const app = express();
 
 //middleware for parsing request body
 
-app.use(express.json())
-
-app.post("/books", async (req, res) => {
-    try {
-        if (validateBooks(req.body)) {
-            const newBook = {
-                title: req.body.title,
-                author: req.body.author,
-                publishYear: req.body.publishYear,
-            }
-            const insertBook = await Book.create(newBook)
-            res.status(201).json({
-                message: "sucess",
-                data: { insertBook }
-            })
-        }
-        else {
-            res.status(400).json({
-                message: "send all required fields: title,author,publishYear"
-            })
-        }
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-        })
-    }
-})
+app.use(express.json());
+app.use(cors());
+// app.use(cors(
+//     {
+//         origin: "http://localhost:3000",
+//         methods: ["GET", "POST", "DELETE", "PUT"],
+//         allowedHeaders: ["Content-Type"]
+//     }
+// ));
+app.use("/books", booksRouter)
 
 mongoose.connect(mongoDBURL)
     .then(() => {
